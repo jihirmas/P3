@@ -240,6 +240,6 @@ while True:
         pass
     finally:
         client.close()
-        print("Cliente desconectado por error")
+        print("Cliente desconectado por error")
 
 
