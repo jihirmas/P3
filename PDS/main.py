@@ -118,7 +118,13 @@ def verificacion_fisica():
             dict_lockers[i] = True
         else:
             dict_lockers[i] = False
-    response = ujson.dumps(dict_lockers)
+    estados = ujson.dumps(dict_lockers)
+    response = f"HTTP/1.1 200 OK\r\n"
+    response += f"Content-Type: application/json\r\n\r\n"
+    response += "Acces-Control-Allow-Origin: *\r\n\r\n"
+    response += "{"
+    response += f"'message': {estados}"
+    response += "}"
     return response
 
 def leer_sensor_magentico(locker_id):
@@ -132,9 +138,9 @@ def leer_sensor_magentico(locker_id):
     print(f"Locker {locker_id} - Magnetico: {estado}")
     time.sleep(0.25) 
     if estado == 0:
-        return False
-    else:
         return True
+    else:
+        return False
 
 def esperar_cierre(locker_id):
     time.sleep(0.25)
@@ -219,7 +225,7 @@ print("Esperando solicitudes...")
 while True:
     time.sleep(1)
     hora_actual = time.localtime()
-    print(f"Esperando solicitud a las {hora_actual.tm_hour}:{hora_actual.tm_min}:{hora_actual.tm_sec}")
+    print(f"Esperando solicitud a las")
     try:
         client, addr = s.accept()
     except Exception as error:
@@ -237,9 +243,9 @@ while True:
             client.close()
     except Exception as e:
         print(e)
+        print("Cliente desconectado por error")
         pass
     finally:
         client.close()
-        print("Cliente desconectado por error")
 
 
