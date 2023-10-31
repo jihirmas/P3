@@ -217,11 +217,15 @@ s.listen(5)
 print("Esperando solicitudes...")
 
 while True:
+    time.sleep(1)
+    hora_actual = time.localtime()
+    print(f"Esperando solicitud a las {hora_actual.tm_hour}:{hora_actual.tm_min}:{hora_actual.tm_sec}")
     try:
-        time.sleep(1)
-        hora_actual = time.localtime()
-        print(f"Esperando solicitud a las {hora_actual.tm_hour}:{hora_actual.tm_min}:{hora_actual.tm_sec}")
         client, addr = s.accept()
+    except Exception as error:
+        print(error)
+        continue
+    try:
         request = client.recv(1024)
         end_of_headers = request.find(b'\r\n\r\n') + 4
         content = request[end_of_headers:].decode('utf-8')
@@ -233,9 +237,9 @@ while True:
             client.close()
     except Exception as e:
         print(e)
-        continue
+        pass
     finally:
         client.close()
-        print("Cliente desconectado por error")
+        print("Cliente desconectado por error")
 
 
