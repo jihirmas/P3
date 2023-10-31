@@ -66,22 +66,20 @@ pin_sensor_magnetico_1 = machine.Pin(15, machine.Pin.IN, machine.Pin.PULL_UP)
 pin_sensor_magnetico_2 = machine.Pin(16, machine.Pin.IN, machine.Pin.PULL_UP)
 pin_sensor_magnetico_3 = machine.Pin(17, machine.Pin.IN, machine.Pin.PULL_UP)
 
-#Cerradura electrica
-# cerradura1 = machine.Pin(4, machine.Pin.OUT)
-
 #Ponindo los servos en 180 grados (posicion cerrado)
-motor1.move(0)
+# motor1.move(0)
+# time.sleep(0.25)
+# motor2.move(0)
+# time.sleep(0.25)
+# motor3.move(0)
+# time.sleep(0.25)
+# time.sleep(3)
 time.sleep(0.25)
-motor2.move(0)
+motor1.move(120)
 time.sleep(0.25)
-motor3.move(0)
+motor2.move(120)
 time.sleep(0.25)
-time.sleep(3)
-motor1.move(180)
-time.sleep(0.25)
-motor2.move(180)
-time.sleep(0.25)
-motor3.move(180)
+motor3.move(120)
 time.sleep(0.25)
 
 
@@ -124,24 +122,22 @@ def verificacion_fisica():
     return response
 
 def leer_sensor_magentico(locker_id):
-    time.sleep(1)
+    time.sleep(0.25)
     if locker_id == 1:
         estado = pin_sensor_magnetico_1.value()
-        print(f"Locker {locker_id} - Magnetico: {estado}")
-    time.sleep(1)
-    # elif locker_id == 2:
-    #     estado = pin_sensor_magnetico_2.value()
-    #     time.sleep(0.25)
-    # elif locker_id == 3:
-    #     estado = pin_sensor_magnetico_3.value()
-    #     time.sleep(0.25) 
+    elif locker_id == 2:
+        estado = pin_sensor_magnetico_2.value()
+    elif locker_id == 3:
+        estado = pin_sensor_magnetico_3.value()
+    print(f"Locker {locker_id} - Magnetico: {estado}")
+    time.sleep(0.25) 
     if estado == 0:
         return False
     else:
         return True
 
 def esperar_cierre(locker_id):
-    time.sleep(1)
+    time.sleep(0.25)
     while True:
         lectura = leer_sensor_magentico(locker_id)
         print(f"Locker {locker_id} - Magnetico: {lectura}")
@@ -151,8 +147,8 @@ def esperar_cierre(locker_id):
         else:
             print(f"Puerta abierta")
             pass
-        time.sleep(1)
-    time.sleep(1)
+        time.sleep(0.25)
+    time.sleep(0.25)
     
 def esperar_infrarrojo(locker_id, modo):
     time.sleep(0.25)
@@ -161,7 +157,7 @@ def esperar_infrarrojo(locker_id, modo):
         print(f"Locker {locker_id} - IR: {lectura}")
         if modo == "cargar":
             if lectura:
-                print("IR OK")
+                print("Paquete Cargado")
                 print("")
                 break
             else:
@@ -169,7 +165,7 @@ def esperar_infrarrojo(locker_id, modo):
                 pass
         elif modo == "retirar":
             if not lectura:
-                print("IR OK")
+                print("Paquete Retirado")
                 print("")
                 break
             else:
@@ -181,50 +177,36 @@ def abrir_locker(locker_id, modo):
     print(f"Abriendo locker {locker_id} para cargar")
     mover_servo(locker_id, 0)
     esperar_infrarrojo(locker_id, modo)
-    # esperar_cierre(locker_id)
-    time.sleep(3)
-    mover_servo(locker_id, 180)
+    esperar_cierre(locker_id)
+    mover_servo(locker_id, 120)
     print(f"Locker {locker_id} cerrado")
     response = f"HTTP/1.1 200 OK\r\n"
     response += f"Content-Type: application/json\r\n\r\n"
     response += "Acces-Control-Allow-Origin: *\r\n\r\n"
     response += "{'message': 'Abierto en mode l}"
-    return response
-    # while True:
-    #     leer_sensor_magentico(locker_id)
-        
-    
-    
+    return response    
 
 def handle_post_request(client, content):
     print(content)
     json_data = ujson.loads(content)
     print(json_data)
-    # try:
-    json_data = ujson.loads(content)
-    accion = json_data.get("accion")
-    casillero = int(json_data.get("casillero"))
-    if str(accion) == "verificacion":
-        # response = activar_cerrojo(casillero)
-        # response = verificacion_fisica()
-        response = "HTTP/1.1 200 OK\r\n\r\nVerificacion realizada andi"
-    elif str(accion) == "cargar":
-        response = abrir_locker(casillero, "cargar")
-        # response = "HTTP/1.1 200 OK\r\n\r\nLocker abierto para cargar andi"
-    elif str(accion) == "retirar":
-        # response = abrir_locker(casillero, "retirar")
-        response = "HTTP/1.1 200 OK\r\n\r\nLocker abierto para retirar andi"
-    else: 
-        response = "HTTP/1.1 400 Bad Request\r\n\r\nAccion no reconocida"
-    # except ValueError as e:
-    #     response = "HTTP/1.1 400 Bad Request\r\n\r\nError al analizar JSON"
-    #     print(e)
+    try:
+        json_data = ujson.loads(content)
+        accion = json_data.get("accion")
+        casillero = int(json_data.get("casillero"))
+        if str(accion) == "verificacion":
+            response = verificacion_fisica()
+        elif str(accion) == "cargar":
+            response = abrir_locker(casillero, "cargar")
+        elif str(accion) == "retirar":
+            response = "HTTP/1.1 200 OK\r\n\r\nLocker abierto para retirar"
+        else: 
+            response = "HTTP/1.1 400 Bad Request\r\n\r\nAccion no reconocida"
+    except ValueError as e:
+        response = f"HTTP/1.1 400 Bad Request\r\n\r\nError al analizar JSON. se recibió {content}"
+        print(e)
     client.send(response)
     client.close()
-
-
-
-
 
 # MAIN
 
@@ -236,7 +218,8 @@ print("Esperando solicitudes...")
 
 while True:
     time.sleep(1)
-    print(f"Esperando solicitud a las {(time.time())}")
+    hora_actual = time.localtime()
+    print(f"Esperando solicitud a las {hora_actual.tm_hour}:{hora_actual.tm_min}:{hora_actual.tm_sec}")
     client, addr = s.accept()
     request = client.recv(1024)
     end_of_headers = request.find(b'\r\n\r\n') + 4
@@ -247,6 +230,5 @@ while True:
         response = "HTTP/1.1 200 OK\r\n\r\nHola desde ESP32"
         client.send(response)
         client.close()
-
 
 
