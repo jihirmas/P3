@@ -174,7 +174,7 @@ def esperar_infrarrojo(locker_id, modo):
     time.sleep(0.25)
     
 def abrir_locker(locker_id, modo):
-    print(f"Abriendo locker {locker_id} para cargar")
+    print(f"Abriendo locker {locker_id} para {modo}")
     mover_servo(locker_id, 0)
     esperar_infrarrojo(locker_id, modo)
     esperar_cierre(locker_id)
@@ -199,7 +199,7 @@ def handle_post_request(client, content):
         elif str(accion) == "cargar":
             response = abrir_locker(casillero, "cargar")
         elif str(accion) == "retirar":
-            response = "HTTP/1.1 200 OK\r\n\r\nLocker abierto para retirar"
+            response = abrir_locker(casillero, "retirar")
         else: 
             response = "HTTP/1.1 400 Bad Request\r\n\r\nAccion no reconocida"
     except ValueError as e:
