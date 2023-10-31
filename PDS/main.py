@@ -217,18 +217,25 @@ s.listen(5)
 print("Esperando solicitudes...")
 
 while True:
-    time.sleep(1)
-    hora_actual = time.localtime()
-    print(f"Esperando solicitud a las {hora_actual.tm_hour}:{hora_actual.tm_min}:{hora_actual.tm_sec}")
-    client, addr = s.accept()
-    request = client.recv(1024)
-    end_of_headers = request.find(b'\r\n\r\n') + 4
-    content = request[end_of_headers:].decode('utf-8')
-    if b"POST" in request and b"Content-Length" in request:
-        handle_post_request(client, content)
-    else: # GET
-        response = "HTTP/1.1 200 OK\r\n\r\nHola desde ESP32"
-        client.send(response)
+    try:
+        time.sleep(1)
+        hora_actual = time.localtime()
+        print(f"Esperando solicitud a las {hora_actual.tm_hour}:{hora_actual.tm_min}:{hora_actual.tm_sec}")
+        client, addr = s.accept()
+        request = client.recv(1024)
+        end_of_headers = request.find(b'\r\n\r\n') + 4
+        content = request[end_of_headers:].decode('utf-8')
+        if b"POST" in request and b"Content-Length" in request:
+            handle_post_request(client, content)
+        else: # GET
+            response = "HTTP/1.1 200 OK\r\n\r\nHola desde ESP32"
+            client.send(response)
+            client.close()
+    except Exception as e:
+        print(e)
+        continue
+    finally:
         client.close()
+        print("Cliente desconectado por error")
 
 
