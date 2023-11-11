@@ -1,0 +1,7 @@
+fastapi==0.104.1
+pydantic==2.4.2
+Requests==2.31.0
+SQLAlchemy==2.0.23
+uvicorn==0.24.0.post1
+asposestorage==1.0.2
+database==0.6.0
